@@ -6,9 +6,10 @@ import { Volume2, VolumeX, Download } from "lucide-react"
 const BURN_QUOTES = [
   "在这里倾诉，让火焰带走一切",
   "写下，焚烧，消失",
-  "无人知晓的话语，终将化为灰烬",
+  "无人听闻的低语，终将融于炽热",
   "让它随风而逝",
   "没有人会发现你的秘密",
+  "让风与火一同埋葬你的过往",
   "真理藏于虚空，让文字归于永寂",
   "火焰像生命一样燃烧，熄灭",
   "时间终将遗忘，让记忆随火而逝",
@@ -25,10 +26,16 @@ const BURN_QUOTES = [
   "我唯一知道的就是我一无所知",
   "像一颗石头落入深渊，它会在黎明中升起",
   "终有一天，我们会像秘密一样燃烧",
-  "烧，燃，灭",
+  "燃起，烧尽，归寂",
+  "秘密是锁，火焰是钥匙",
+  "有些秘密，生来只为被烈焰吞没",
 ] as const
 
 
+// 在文件顶部添加导入
+import Notification from "./components/Notification"
+
+// 在组件内添加状态
 export default function AshSecret() {
   const [secret, setSecret] = useState("")
   const [isBurning, setIsBurning] = useState(false)
@@ -38,11 +45,53 @@ export default function AshSecret() {
 
   // 删除 generateShareLink 和 copyShareLink 函数
 
+  const [notification, setNotification] = useState({ message: '', show: false })
+
   const burnSecret = () => {
     if (!secret.trim() || isBurning) return
 
     setIsBurning(true)
-    setBurnCount((prev) => prev + 1)
+    setBurnCount((prev) => {
+      const newCount = prev + 1
+      // 里程碑检查
+      if (newCount === 1) {
+        setTimeout(() => setNotification({
+          message: '第一个秘密已化为灰烬，愿你从此轻装前行',
+          show: true
+        }), 3100)
+      } else if (newCount === 5) {
+        setTimeout(() => setNotification({
+          message: '五个秘密已随风而逝，愿你渐渐放下过往',
+          show: true
+        }), 3100)
+      } else if (newCount === 10) {
+        setTimeout(() => setNotification({
+          message: '十个秘密已随风而逝，愿你所愿渐渐安宁',
+          show: true
+        }), 3100)
+      } else if (newCount === 50) {
+        setTimeout(() => setNotification({
+          message: '五十个故事已成过往，愿你未来不再有遗憾',
+          show: true
+        }), 3100)
+      } else if (newCount === 100) {
+        setTimeout(() => setNotification({
+          message: '百个心事已付诸一炬，愿此后心如明月',
+          show: true
+        }), 3100)
+      } else if (newCount === 365) {
+        setTimeout(() => setNotification({
+          message: '三百六十五个秘密，如同经历了一年的四季轮回。愿你的人生，如同新生',
+          show: true
+        }), 3100)
+      } else if (newCount === 500) {
+        setTimeout(() => setNotification({
+          message: '五百个故事已成云烟，感谢你一直以来的信任。愿你余生欢喜，不负韶华',
+          show: true
+        }), 3100)
+      }
+      return newCount
+    })
     playBurnSound()
 
     setTimeout(() => {
@@ -52,53 +101,360 @@ export default function AshSecret() {
     }, 3000)
   }
 
-  const downloadShareCard = () => {
+  const downloadShareCard = async () => {
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')
-    canvas.width = 1200
-    canvas.height = 630
+    canvas.width = 1080
+    canvas.height = 1380
     
     if (ctx) {
-      // 设置背景渐变
+      // 创建圆角矩形路径
+      const radius = 32 // 圆角半径
+      ctx.beginPath()
+      ctx.moveTo(radius, 0)
+      ctx.lineTo(canvas.width - radius, 0)
+      ctx.quadraticCurveTo(canvas.width, 0, canvas.width, radius)
+      ctx.lineTo(canvas.width, canvas.height - radius)
+      ctx.quadraticCurveTo(canvas.width, canvas.height, canvas.width - radius, canvas.height)
+      ctx.lineTo(radius, canvas.height)
+      ctx.quadraticCurveTo(0, canvas.height, 0, canvas.height - radius)
+      ctx.lineTo(0, radius)
+      ctx.quadraticCurveTo(0, 0, radius, 0)
+      ctx.closePath()
+      
+      // 应用裁剪
+      ctx.clip()
+
+      // 创建背景渐变
       const gradient = ctx.createRadialGradient(
-        canvas.width/2, canvas.height/2, 0,
-        canvas.width/2, canvas.height/2, canvas.width/2
+        canvas.width / 2, canvas.height / 2, 0,
+        canvas.width / 2, canvas.height / 2, canvas.width / 1.2
       )
-      gradient.addColorStop(0, '#1a1a1a')
-      gradient.addColorStop(1, '#121212')
+      gradient.addColorStop(0, '#1c1c1c')
+      gradient.addColorStop(0.4, '#161616')
+      gradient.addColorStop(0.8, '#0d0d0d')
+      gradient.addColorStop(1, '#080808')
       ctx.fillStyle = gradient
       ctx.fillRect(0, 0, canvas.width, canvas.height)
-      
-      // 添加装饰性边框
-      ctx.strokeStyle = '#333333'
+
+      // 随机选择纹理样式
+      const textureStyle = Math.floor(Math.random() * 8)
+
+      switch (textureStyle) {
+        case 0:
+          // 交错网格纹理
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.015)'
+          ctx.lineWidth = 1
+          const gridSize = 40
+          for (let x = 0; x < canvas.width; x += gridSize) {
+            ctx.beginPath()
+            ctx.moveTo(x, 0)
+            ctx.lineTo(x, canvas.height)
+            ctx.stroke()
+          }
+          for (let y = 0; y < canvas.height; y += gridSize) {
+            ctx.beginPath()
+            ctx.moveTo(0, y)
+            ctx.lineTo(canvas.width, y)
+            ctx.stroke()
+          }
+          break
+
+        case 1:
+          // 斜线纹理
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)'
+          const lineSpacing = 60
+          for (let i = -canvas.height; i < canvas.width + canvas.height; i += lineSpacing) {
+            ctx.beginPath()
+            ctx.moveTo(i, 0)
+            ctx.lineTo(i + canvas.height, canvas.height)
+            ctx.stroke()
+          }
+          break
+
+        case 2:
+          // 点阵纹理
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.015)'
+          const dotSpacing = 30
+          for (let x = 0; x < canvas.width; x += dotSpacing) {
+            for (let y = 0; y < canvas.height; y += dotSpacing) {
+              ctx.beginPath()
+              ctx.arc(x, y, 1, 0, Math.PI * 2)
+              ctx.fill()
+            }
+          }
+          break
+
+        case 3:
+          // 波纹纹理
+          for (let i = 0; i < 3; i++) {
+            ctx.strokeStyle = `rgba(255, 69, 0, ${0.01 + i * 0.01})`
+            ctx.beginPath()
+            for (let x = 0; x < canvas.width; x += 2) {
+              const y = Math.sin(x * 0.01 + i) * 20 + canvas.height / 2
+              if (x === 0) {
+                ctx.moveTo(x, y)
+              } else {
+                ctx.lineTo(x, y)
+              }
+            }
+            ctx.stroke()
+          }
+          break
+
+        case 4:
+          // 星空纹理
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.015)'
+          const starCount = 150
+          const maxStarSize = 2
+          
+          // 绘制不同大小和透明度的星星
+          for (let i = 0; i < starCount; i++) {
+            const x = Math.random() * canvas.width
+            const y = Math.random() * canvas.height
+            const size = Math.random() * maxStarSize
+            const opacity = Math.random() * 0.03 + 0.01
+            
+            // 创建星星的光芒效果
+            ctx.beginPath()
+            ctx.arc(x, y, size, 0, Math.PI * 2)
+            ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`
+            ctx.fill()
+            
+            // 添加十字形光芒
+            if (Math.random() > 0.7) {
+              ctx.strokeStyle = `rgba(255, 255, 255, ${opacity * 0.5})`
+              ctx.lineWidth = 0.5
+              ctx.beginPath()
+              ctx.moveTo(x - size * 2, y)
+              ctx.lineTo(x + size * 2, y)
+              ctx.moveTo(x, y - size * 2)
+              ctx.lineTo(x, y + size * 2)
+              ctx.stroke()
+            }
+          }
+          break
+
+        case 5:
+          // 放射状纹理
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.015)'
+          const centerX = canvas.width / 2
+          const centerY = canvas.height / 2
+          for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 30) {
+            const length = Math.max(canvas.width, canvas.height)
+            ctx.beginPath()
+            ctx.moveTo(centerX, centerY)
+            ctx.lineTo(
+              centerX + Math.cos(angle) * length,
+              centerY + Math.sin(angle) * length
+            )
+            ctx.stroke()
+          }
+          break
+
+        case 6:
+          // 螺旋纹理
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.015)'
+          const spiralCenter = { x: canvas.width / 2, y: canvas.height / 2 }
+          let radius = 0
+          let angle = 0
+          ctx.beginPath()
+          while (radius < canvas.width) {
+            const x = spiralCenter.x + radius * Math.cos(angle)
+            const y = spiralCenter.y + radius * Math.sin(angle)
+            if (radius === 0) ctx.moveTo(x, y)
+            else ctx.lineTo(x, y)
+            radius += 0.5
+            angle += 0.1
+          }
+          ctx.stroke()
+          break
+
+        case 7:
+          // 交叉圆形纹理
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.01)'
+          const circleRadius = 100
+          for (let x = 0; x < canvas.width; x += circleRadius * 1.5) {
+            for (let y = 0; y < canvas.height; y += circleRadius * 1.5) {
+              ctx.beginPath()
+              ctx.arc(x, y, circleRadius, 0, Math.PI * 2)
+              ctx.stroke()
+            }
+          }
+          break
+      }
+
+
+      for (let i = 0; i < 100; i++) {
+        const x = Math.random() * canvas.width
+        const y = Math.random() * canvas.height
+        const radius = Math.random() * 1.5
+        const opacity = Math.random() * 0.1
+        ctx.beginPath()
+        ctx.arc(x, y, radius, 0, Math.PI * 2)
+        ctx.fillStyle = `rgba(255, 69, 0, ${opacity})`
+        ctx.fill()
+      }
+
+      // 添加双层装饰边框
+      const drawRoundedRect = (x: number, y: number, w: number, h: number, r: number) => {
+        ctx.beginPath()
+        ctx.moveTo(x + r, y)
+        ctx.lineTo(x + w - r, y)
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r)
+        ctx.lineTo(x + w, y + h - r)
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h)
+        ctx.lineTo(x + r, y + h)
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r)
+        ctx.lineTo(x, y + r)
+        ctx.quadraticCurveTo(x, y, x + r, y)
+        ctx.closePath()
+      }
+
+      // 外边框
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)'
       ctx.lineWidth = 2
-      ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40)
-      
+      drawRoundedRect(40, 40, canvas.width - 80, canvas.height - 80, 24)
+      ctx.stroke()
+
+      // 内边框
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)'
+      ctx.lineWidth = 1
+      drawRoundedRect(60, 60, canvas.width - 120, canvas.height - 120, 20)
+      ctx.stroke()
+
+      // 添加内边框
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)'
+      ctx.lineWidth = 2
+      const borderRadius = 24 // 内边框圆角
+      ctx.beginPath()
+      ctx.moveTo(40 + borderRadius, 40)
+      ctx.lineTo(canvas.width - 40 - borderRadius, 40)
+      ctx.quadraticCurveTo(canvas.width - 40, 40, canvas.width - 40, 40 + borderRadius)
+      ctx.lineTo(canvas.width - 40, canvas.height - 40 - borderRadius)
+      ctx.quadraticCurveTo(canvas.width - 40, canvas.height - 40, canvas.width - 40 - borderRadius, canvas.height - 40)
+      ctx.lineTo(40 + borderRadius, canvas.height - 40)
+      ctx.quadraticCurveTo(40, canvas.height - 40, 40, canvas.height - 40 - borderRadius)
+      ctx.lineTo(40, 40 + borderRadius)
+      ctx.quadraticCurveTo(40, 40, 40 + borderRadius, 40)
+      ctx.stroke()
+
       // 添加标题
-      ctx.fillStyle = '#ffffff'
-      ctx.font = 'bold 64px "SF Pro Display", -apple-system, sans-serif'
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.95)'
+      ctx.font = 'bold 88px "SF Pro Display", -apple-system, sans-serif'
       ctx.textAlign = 'center'
-      ctx.fillText('灰 烬', canvas.width/2, 160)
+      ctx.shadowColor = 'rgba(255, 69, 0, 0.2)'
+      ctx.shadowBlur = 20
+      ctx.fillText('灰 烬', canvas.width/2, canvas.height/3)
+      ctx.shadowBlur = 0
+
+      // 添加焚烧数量
+      const gradient2 = ctx.createLinearGradient(
+        canvas.width/2 - 150, 
+        canvas.height/2, 
+        canvas.width/2 + 150, 
+        canvas.height/2
+      )
+      gradient2.addColorStop(0, '#ff4500')
+      gradient2.addColorStop(1, '#ff6b00')
+      ctx.fillStyle = gradient2
+      ctx.font = 'bold 120px "SF Pro Display", -apple-system, sans-serif'
+      ctx.shadowColor = 'rgba(255, 69, 0, 0.3)'
+      ctx.shadowBlur = 25
+      ctx.fillText(burnCount.toLocaleString(), canvas.width/2, canvas.height/2)
+      ctx.shadowBlur = 0
+
+      // 添加说明文字
+      ctx.font = '42px "SF Pro Display", -apple-system, sans-serif'
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'
+      ctx.fillText('个秘密已化为灰烬', canvas.width/2, canvas.height/2 + 80)
+
+      // 添加装饰分割线
+      const lineY = canvas.height/2 + 150
       
-      // 添加主要文字
-      ctx.font = '36px "SF Pro Display", -apple-system, sans-serif'
-      ctx.fillStyle = '#ff4500'
-      ctx.fillText(`我已将 ${burnCount} 个秘密化为灰烬`, canvas.width/2, canvas.height/2)
+      // 渐变线条
+      const lineGradient = ctx.createLinearGradient(
+        canvas.width/2 - 200, lineY,
+        canvas.width/2 + 200, lineY
+      )
+      lineGradient.addColorStop(0, 'rgba(255, 255, 255, 0)')
+      lineGradient.addColorStop(0.2, 'rgba(255, 255, 255, 0.15)')
+      lineGradient.addColorStop(0.5, 'rgba(255, 69, 0, 0.2)')
+      lineGradient.addColorStop(0.8, 'rgba(255, 255, 255, 0.15)')
+      lineGradient.addColorStop(1, 'rgba(255, 255, 255, 0)')
       
-      // 添加随机引言
-      ctx.font = 'italic 28px "SF Pro Display", -apple-system, sans-serif'
-      ctx.fillStyle = '#666666'
-      ctx.fillText(BURN_QUOTES[Math.floor(Math.random() * BURN_QUOTES.length)], canvas.width/2, canvas.height - 120)
+      ctx.strokeStyle = lineGradient
+      ctx.lineWidth = 1
+      ctx.beginPath()
+      ctx.moveTo(canvas.width/2 - 200, lineY)
+      ctx.lineTo(canvas.width/2 + 200, lineY)
+      ctx.stroke()
+      ctx.fillStyle = 'rgba(255, 69, 0, 0.2)'
+      ctx.beginPath()
+      ctx.arc(canvas.width/2, lineY, 4, 0, Math.PI * 2)
+      ctx.fill()
       
-      // 添加底部签名
-      ctx.font = '24px "SF Pro Display", -apple-system, sans-serif'
-      ctx.fillStyle = '#444444'
-      const date = new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })
-      ctx.fillText(date, canvas.width/2, canvas.height - 60)
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.15)'
+      ctx.beginPath()
+      ctx.arc(canvas.width/2, lineY, 2, 0, Math.PI * 2)
+      ctx.fill()
+
+      ctx.font = 'italic 36px "SF Pro Display", -apple-system, sans-serif'
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)'
+      const quote = BURN_QUOTES[Math.floor(Math.random() * BURN_QUOTES.length)]
+      const maxWidth = canvas.width - 200
+      ctx.fillText(quote, canvas.width/2, canvas.height/2 + 200, maxWidth)
+
+
+      const getSeasonAndTime = () => {
+        const date = new Date()
+        const month = date.getMonth() + 1
+        const hour = date.getHours()
+        
+        let season = ''
+        if (month >= 3 && month <= 5) season = '春日'
+        else if (month >= 6 && month <= 8) season = '夏日'
+        else if (month >= 9 && month <= 11) season = '秋日'
+        else season = '冬日' // 12、1、2月
+        
+        let timeDesc = ''
+        if (hour >= 23 || hour < 1) timeDesc = '子时'
+        else if (hour >= 1 && hour < 5) timeDesc = '深夜'
+        else if (hour >= 5 && hour < 7) timeDesc = '晨曦'
+        else if (hour >= 7 && hour < 11) timeDesc = '晴朝'
+        else if (hour >= 11 && hour < 13) timeDesc = '正午'
+        else if (hour >= 13 && hour < 17) timeDesc = '午后'
+        else if (hour >= 17 && hour < 19) timeDesc = '傍晚'
+        else if (hour >= 19 && hour < 23) timeDesc = '夜幕'
+        
+        return { season, timeDesc }
+      }
+
+      const date = new Date()
+      const year = date.getFullYear()
+      const month = date.getMonth() + 1
+      const day = date.getDate()
       
+      const toChineseNum = (num: number) => {
+        const chars = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
+        if (num <= 10) return chars[num]
+        if (num < 20) return '十' + (num > 10 ? chars[num - 10] : '')
+        return chars[Math.floor(num/10)] + '十' + (num % 10 ? chars[num % 10] : '')
+      }
+      
+      const yearStr = year.toString().split('').map(n => toChineseNum(parseInt(n))).join('')
+      const monthStr = toChineseNum(month)
+      const dayStr = toChineseNum(day)
+      
+      const { season, timeDesc } = getSeasonAndTime()
+      
+      ctx.font = '28px "SF Pro Display", -apple-system, sans-serif'
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.3)'
+      ctx.fillText(`${season}${timeDesc} · ${yearStr}年${monthStr}月${dayStr}日`, canvas.width/2, canvas.height - 80)
+
       // 下载图片
       const link = document.createElement('a')
-      link.download = `灰烬-${date}.png`
+      link.download = `灰烬记录-${date}.png`
       link.href = canvas.toDataURL('image/png')
       link.click()
     }
@@ -139,6 +495,13 @@ export default function AshSecret() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 relative bg-[#121212]">
+      {/* 添加通知组件 */}
+      <Notification 
+        message={notification.message}
+        isVisible={notification.show}
+        onClose={() => setNotification(prev => ({ ...prev, show: false }))}
+      />
+
       <div className="text-center mb-8 w-full max-w-2xl">
         <h3 className="text-gray-200/80 text-3xl md:text-4xl font-semibold mb-2 tracking-wider">灰烬</h3>
         <div className="h-12 flex items-center justify-center overflow-hidden relative quote-mask">
@@ -181,15 +544,17 @@ export default function AshSecret() {
 
         <div className="flex justify-between items-center mt-2">
           <div className="text-xs text-gray-500">{secret.length}/100</div>
-          {showShareCard && (
-            <button
-              onClick={downloadShareCard}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-700/50 text-gray-300 text-xs rounded hover:bg-gray-600/50 transition-colors"
-            >
-              <Download size={14} />
-              分享卡片
-            </button>
-          )}
+          <div className="h-8"> {/* 预留固定高度的容器 */}
+            {showShareCard && (
+              <button
+                onClick={downloadShareCard}
+                className="flex items-center gap-2 px-4 py-2 bg-gray-700/50 text-gray-300 text-xs rounded-2xl hover:bg-gray-600/50 transition-colors border border-gray-600/30"
+              >
+                <Download size={14} />
+                留存此刻
+              </button>
+            )}
+          </div>
         </div>
 
         {isBurning && (
