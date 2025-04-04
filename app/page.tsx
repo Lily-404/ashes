@@ -1,32 +1,26 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Volume2, VolumeX } from "lucide-react"
+import { Volume2, VolumeX, Download } from "lucide-react"
 
 const BURN_QUOTES = [
-  "留下想说的话，让火焰带走一切",
+  "在这里倾诉，让火焰带走一切",
   "写下，焚烧，消失",
-  "在这里倾诉，让烈火带走你的负担",
   "无人知晓的话语，终将化为灰烬",
   "让它随风而逝",
   "没有人会发现你的秘密",
-  "爱你，还是烧了吧...",
-  "焚烧",
-  "生命的意义在于释放，让火焰净化一切",
   "真理藏于虚空，让文字归于永寂",
   "火焰像生命一样燃烧，熄灭",
   "时间终将遗忘，让记忆随火而逝",
   "生命中最重要的不是活着，而是我们如何活着",
-  "那一年，我把课本和试卷全烧了，里面藏着秘密",
+  "那一年，我把课本和试卷全烧了",
   "每一个灵魂都值得被倾听，即使最终化为尘埃",
   "我们都是西西弗斯，推着自己的巨石走向山顶",
-  "在永恒的沉默中，倾听内心的回响",
   "反抗即存在，书写即自由",
   "有些话还是需要被燃烧的",
   "烧吧！烧吧！烧吧！",
-  "在荒谬中...",
-  "我们的秘密是通向自由的阶梯",
-  "在黑暗中书写光明，在绝望中寻找希望",
+  "秘密，通向自由的阶梯",
+  "黑暗中书写光明，绝望中寻找希望",
   "照顾好你的灵魂，它比身体更重要",
   "我唯一知道的就是我一无所知",
   "像一颗石头落入深渊，它会在黎明中升起",
@@ -39,8 +33,76 @@ export default function AshSecret() {
   const [secret, setSecret] = useState("")
   const [isBurning, setIsBurning] = useState(false)
   const [burnCount, setBurnCount] = useState(0)
-  const [soundEnabled, setSoundEnabled] = useState(true)  // 默认开启音效
+  const [soundEnabled, setSoundEnabled] = useState(true)
+  const [showShareCard, setShowShareCard] = useState(false)
 
+  // 删除 generateShareLink 和 copyShareLink 函数
+
+  const burnSecret = () => {
+    if (!secret.trim() || isBurning) return
+
+    setIsBurning(true)
+    setBurnCount((prev) => prev + 1)
+    playBurnSound()
+
+    setTimeout(() => {
+      setSecret("")
+      setIsBurning(false)
+      setShowShareCard(true)
+    }, 3000)
+  }
+
+  const downloadShareCard = () => {
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    canvas.width = 1200
+    canvas.height = 630
+    
+    if (ctx) {
+      // 设置背景渐变
+      const gradient = ctx.createRadialGradient(
+        canvas.width/2, canvas.height/2, 0,
+        canvas.width/2, canvas.height/2, canvas.width/2
+      )
+      gradient.addColorStop(0, '#1a1a1a')
+      gradient.addColorStop(1, '#121212')
+      ctx.fillStyle = gradient
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      
+      // 添加装饰性边框
+      ctx.strokeStyle = '#333333'
+      ctx.lineWidth = 2
+      ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40)
+      
+      // 添加标题
+      ctx.fillStyle = '#ffffff'
+      ctx.font = 'bold 64px "SF Pro Display", -apple-system, sans-serif'
+      ctx.textAlign = 'center'
+      ctx.fillText('灰 烬', canvas.width/2, 160)
+      
+      // 添加主要文字
+      ctx.font = '36px "SF Pro Display", -apple-system, sans-serif'
+      ctx.fillStyle = '#ff4500'
+      ctx.fillText(`我已将 ${burnCount} 个秘密化为灰烬`, canvas.width/2, canvas.height/2)
+      
+      // 添加随机引言
+      ctx.font = 'italic 28px "SF Pro Display", -apple-system, sans-serif'
+      ctx.fillStyle = '#666666'
+      ctx.fillText(BURN_QUOTES[Math.floor(Math.random() * BURN_QUOTES.length)], canvas.width/2, canvas.height - 120)
+      
+      // 添加底部签名
+      ctx.font = '24px "SF Pro Display", -apple-system, sans-serif'
+      ctx.fillStyle = '#444444'
+      const date = new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })
+      ctx.fillText(date, canvas.width/2, canvas.height - 60)
+      
+      // 下载图片
+      const link = document.createElement('a')
+      link.download = `灰烬-${date}.png`
+      link.href = canvas.toDataURL('image/png')
+      link.click()
+    }
+  }
 
   useEffect(() => {
     const savedCount = localStorage.getItem("ashSecretBurnCount")
@@ -61,19 +123,6 @@ export default function AshSecret() {
       audio.volume = 0.3  // adjust volume（0 - 1）
       audio.play().catch((e) => console.log("Audio play failed:", e))
     }
-  }
-
-  const burnSecret = () => {
-    if (!secret.trim() || isBurning) return
-
-    setIsBurning(true)
-    setBurnCount((prev) => prev + 1)
-    playBurnSound()
-
-    setTimeout(() => {
-      setSecret("")
-      setIsBurning(false)
-    }, 3000)
   }
 
   const [currentQuote, setCurrentQuote] = useState(() =>
@@ -113,15 +162,35 @@ export default function AshSecret() {
         <textarea
           value={secret}
           onChange={(e) => setSecret(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              if (secret.trim() && !isBurning) {
+                burnSecret();
+              }
+            }
+          }}
           disabled={isBurning}
           maxLength={100}
-          placeholder="写下你想要焚烬的秘密..."
+          placeholder="写下你要焚烧的秘密..."
           aria-label="写下你的秘密"
-          className={`w-full h-28 sm:h-32 bg-[#1414149c] text-white p-3 sm:p-4 rounded-lg border border-gray-600 resize-none focus:outline-none focus:border-white focus:bg-[#ffffff05] transition-all ${isBurning ? "opacity-0" : "opacity-100"
-            }`}
+          className={`w-full h-28 sm:h-32 bg-[#1414149c] text-white p-3 sm:p-4 rounded-lg border border-gray-600 resize-none focus:outline-none focus:border-white focus:bg-[#ffffff05] transition-all ${
+            isBurning ? "opacity-0" : "opacity-100"
+          }`}
         />
 
-        <div className="absolute bottom-2 right-3 text-xs text-gray-500">{secret.length}/100</div>
+        <div className="flex justify-between items-center mt-2">
+          <div className="text-xs text-gray-500">{secret.length}/100</div>
+          {showShareCard && (
+            <button
+              onClick={downloadShareCard}
+              className="flex items-center gap-2 px-4 py-2 bg-gray-700/50 text-gray-300 text-xs rounded hover:bg-gray-600/50 transition-colors"
+            >
+              <Download size={14} />
+              分享卡片
+            </button>
+          )}
+        </div>
 
         {isBurning && (
           <div
@@ -136,7 +205,7 @@ export default function AshSecret() {
       <button
         onClick={burnSecret}
         disabled={!secret.trim() || isBurning}
-        aria-label={isBurning ? "焚烧中" : "焚烬秘密"}
+        aria-label={isBurning ? "焚烧中" : "焚烧秘密"}
         className={`mt-6 px-8 py-3 rounded-lg transition-all duration-300 border ${isBurning
           ? "bg-gradient-to-r from-red-600 to-red-700 text-white cursor-not-allowed border-transparent"
           : secret.trim()
@@ -144,7 +213,7 @@ export default function AshSecret() {
             : "bg-[#1414149c] text-gray-400 cursor-not-allowed border-gray-600"
           }`}
       >
-        {isBurning ? "🔥焚烧中..." : " 焚烬秘密 "}
+        {isBurning ? "🔥焚烧中..." : " 焚烧秘密 "}
       </button>
 
       <div className="mt-4 flex justify-center">
